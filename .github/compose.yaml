@@ -1,0 +1,17 @@
+services:
+  pixel:
+    image: senorihl/yopa-pixel_test
+    ports:
+      - ${YOPA_PORT:-80}:80
+    env_file:
+      - .env
+    depends_on:
+      - nats
+  worker:
+    image: senorihl/yopa-worker_test
+    env_file:
+      - .env
+    depends_on:
+      - nats
+  nats:
+    image: nats:2.10.21

@@ -1,0 +1,31 @@
+services:
+  pixel:
+    image: senorihl/yopa-pixel_test
+    build:
+      context: .
+      target: watchable
+      args:
+        ENTRY_DIRECTORY: services/pixel
+    ports:
+      - ${YOPA_PORT:-80}:80
+    volumes:
+      - .:/app:rw
+    env_file:
+      - .env
+    depends_on:
+      - nats
+  worker:
+    image: senorihl/yopa-worker_test
+    build:
+      context: .
+      target: watchable
+      args:
+        ENTRY_DIRECTORY: services/worker
+    volumes:
+      - .:/app:rw
+    env_file:
+      - .env
+    depends_on:
+      - nats
+  nats:
+    image: nats:2.10.21

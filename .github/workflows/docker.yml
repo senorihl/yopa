@@ -1,0 +1,78 @@
+name: Docker build & push images
+
+on:
+  push:
+  workflow_dispatch:
+
+
+jobs:
+  buildx:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Pixel image
+        uses: docker/build-push-action@v6
+        with:
+          load: true
+          tags: senorihl/yopa-pixel_test
+          target: runnable
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+          build-args: |
+            ENTRY_DIRECTORY=services/pixel
+
+      - name: Build Worker image
+        uses: docker/build-push-action@v6
+        with:
+          load: true
+          tags: senorihl/yopa-worker_test
+          target: runnable
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+          build-args: |
+            ENTRY_DIRECTORY=services/worker
+
+      - name: Test stack
+        run: |-
+          set -ex
+          cp .env .github/.env
+          docker compose -f .github/compose.yaml up -d
+          .github/scripts/wait_for_curl.sh http://127.0.0.1/status || { docker compose -f .github/compose.yaml logs ; exit 1; }
+
+      - name: Push Pixel image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: senorihl/yopa-pixel
+          target: runnable
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            ENTRY_DIRECTORY=services/pixel
+
+      - name: Push Worker image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: senorihl/yopa-worker
+          target: runnable
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            ENTRY_DIRECTORY=services/worker
