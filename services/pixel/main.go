@@ -28,7 +28,7 @@ func main() {
 
 	fiberApp := server.Setup(func(query string, remoteAddr string) {
 		if natsError == nil {
-			payload := []byte(fmt.Sprintf("%s:%s", remoteAddr, query))
+			payload := []byte(fmt.Sprintf("%s///?%s", remoteAddr, query))
 			err := nc.Publish(conf.Pixel.Channel, payload)
 
 			if err == nil {
