@@ -1,0 +1,1 @@
+window['Yopa'].sendEvent('page')

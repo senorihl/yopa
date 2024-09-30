@@ -24,5 +24,9 @@ func Setup(pixelCallback func(query string, remoteAddr string)) *fiber.App {
 		return c.SendString(transPixel)
 	})
 
+	app.Get("/yopa:version?.js", func(c *fiber.Ctx) error {
+		return c.SendFile("/app/web/dist/yopa" + c.Params("version") + ".js")
+	})
+
 	return app
 }
