@@ -13,6 +13,7 @@ const config: Partial<ConfigurationInput> = {
     pixel: window._YOPA_PIXEL,
     scheme: window._YOPA_SCHEME,
     domain: window._YOPA_DOMAIN,
+    site: window._YOPA_SITE,
 };
 
 window.Yopa = new Yopa(config);

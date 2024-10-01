@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"time"
 )
 
 type Pixel struct {
@@ -14,10 +15,17 @@ type Pixel struct {
 }
 
 type Event struct {
-	Name   string                 `json:"-"`
-	Page   PageEvent              `json:"-"`
-	Action ActionEvent            `json:"-"`
-	More   map[string]interface{} `json:"-"`
+	Globals
+	Name    string                 `json:"-"`
+	Visitor string                 `json:"-"`
+	Page    PageEvent              `json:"-"`
+	Action  ActionEvent            `json:"-"`
+	More    map[string]interface{} `json:"-"`
+}
+
+type Globals struct {
+	Timestamp time.Time `json:"-"`
+	Visitor   string    `json:"visitor"`
 }
 
 type PageEvent struct {
@@ -65,18 +73,7 @@ func UnparseQuery(query []byte) (Pixel, error) {
 }
 
 func (pixel Pixel) String() string {
-	str := fmt.Sprintf("Pixel<site_id=%d,type:%s>", pixel.Site, pixel.Event.Name)
-
-	switch pixel.Event.Name {
-	case "page":
-		data, _ := json.Marshal(pixel.Event.Page)
-		str = fmt.Sprintf("%s%s", str, data)
-	case "action":
-		data, _ := json.Marshal(pixel.Event.Action)
-		str = fmt.Sprintf("%s%s", str, data)
-	}
-
-	return str
+	return fmt.Sprintf("Pixel<site_id=%d, type=%s, visitor=%s, ts=%s>", pixel.Site, pixel.Event.Name, pixel.Event.Visitor, pixel.Event.Timestamp.UTC().Format(time.RFC3339))
 }
 
 func (event *Event) UnmarshalJSON(data []byte) error {
@@ -101,6 +98,13 @@ func (event *Event) UnmarshalJSON(data []byte) error {
 		}
 	}
 	event.Name = receiver["event_name"].(string)
+	event.Visitor = receiver["visitor"].(string)
+	ts, tsErr := strconv.ParseInt(fmt.Sprint(receiver["ts"].(float64)), 10, 64)
+	if nil != tsErr {
+		event.Timestamp = time.Now()
+	} else {
+		event.Timestamp = time.Unix(ts, 0)
+	}
 	event.More = make(map[string]interface{})
 
 	var reservedKeys []string
