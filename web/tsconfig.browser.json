@@ -6,8 +6,8 @@
     "target": "es5",
     "allowJs": true,
     "paths": {
-      "@http": ["./src/http/browserless.ts"]
+      "@http": ["./src/http/browser.ts"]
     }
   },
-  "files": ["src/index.ts"],
+  "files": ["src/index.ts"]
 }

@@ -31,9 +31,13 @@ func Setup(pixelCallback func(query string, remoteAddr string)) *fiber.App {
 		return c.SendString(transPixel)
 	})
 
-	app.Get("/yopa:version?.js", func(c *fiber.Ctx) error {
-		return c.SendFile("/app/web/dist/yopa" + c.Params("version") + ".js")
+	app.Post("/pixel.gif", func(c *fiber.Ctx) error {
+		c.Set("Content-Type", "image/gif")
+		go pixelCallback(string(c.Request().URI().QueryString())+"&p="+string(c.Body()), c.IP())
+		return c.SendString(transPixel)
 	})
+
+	app.Static("/assets", "/app/web/dist")
 
 	return app
 }

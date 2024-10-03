@@ -1,3 +1,5 @@
+import http from '@http';
+
 export type ConfigurationInput = {
     site: number,
     scheme: string,
@@ -7,7 +9,12 @@ export type ConfigurationInput = {
     cookie_path: string,
     cookie_secure: true,
     debug: true,
+    global_var_name: '_yopa',
 }
+
+type GlobalConfiguration = Partial<{
+    [Property in keyof ConfigurationInput as Uppercase<`_YOPA_${Property}`>]: ConfigurationInput[Property];
+}>
 
 const str = () => ('00000000000000000' + (Math.random() * 0xffffffffffffffff).toString(16)).slice(-16);
 
@@ -18,21 +25,37 @@ const uuid = () => {
 };
 
 export class Yopa {
+    private readonly _config: Pick<ConfigurationInput,
+        'global_var_name' | 'domain' | 'pixel' | 'scheme'
+    >;
     private readonly _site: number;
-    private readonly _scheme: string ;
-    private readonly _domain: string;
-    private readonly _pixel: string;
     private readonly _visitor: string;
     private readonly _hooks = new Hooks();
 
-    constructor(config: Partial<ConfigurationInput>) {
+    constructor(config: Partial<ConfigurationInput> = {}) {
+        if (BUILD_BROWSER) {
+            config.site = config.site || (window as GlobalConfiguration)['_YOPA_SITE'];
+            config.pixel = config.pixel || (window as GlobalConfiguration)['_YOPA_PIXEL'];
+            config.domain = config.domain || (window as GlobalConfiguration)['_YOPA_DOMAIN'];
+            config.scheme = config.scheme || (window as GlobalConfiguration)['_YOPA_SCHEME'];
+            config.global_var_name = config.global_var_name || (window as GlobalConfiguration)['_YOPA_GLOBAL_VAR_NAME'];
+            config.cookie_path = config.cookie_path || (window as GlobalConfiguration)['_YOPA_COOKIE_PATH'];
+            config.cookie_domain = config.cookie_domain || (window as GlobalConfiguration)['_YOPA_COOKIE_DOMAIN'];
+            config.cookie_secure = config.cookie_secure || (window as GlobalConfiguration)['_YOPA_COOKIE_SECURE'];
+            config.debug = config.debug || (window as GlobalConfiguration)['_YOPA_DEBUG'];
+        }
+
         if (!config.site) {
             throw new Error('Missing config site or _YOPA_SITE');
         }
+
         this._site = config.site;
-        this._scheme = config.scheme || 'https';
-        this._domain = config.domain || 'www.yopa.io';
-        this._pixel = config.pixel || '/pixel.gif';
+        this._config = {
+            global_var_name: config.global_var_name || '_yopa',
+            scheme : config.scheme || 'https',
+            domain : config.domain || 'www.yopa.io',
+            pixel : config.pixel || '/pixel.gif',
+        };
         const visitorFromCookie = document.cookie
             .split("; ")
             .find((row) => row.startsWith("_yovi="))
@@ -69,19 +92,25 @@ export class Yopa {
         }
     }
 
+    public getConfiguration<T extends keyof typeof this._config>(name: T): undefined | typeof this._config[T] {
+        if (name in this._config) {
+            return this._config[name]
+        }
+
+        return undefined;
+    }
+
     public sendEvent(name: string) {
         this._hooks.trigger("build:before", { event_name: name });
         const event = { visitor: this._visitor, event_name: name, ts: Date.now() };
         this._hooks.trigger("build:after",  event);
-        const url = `${this._scheme}://${this._domain}${this._pixel}?s=${this._site}&p=${encodeURIComponent(JSON.stringify(event))}`;
-        this._hooks.trigger("send:before",  url);
-        fetch(url)
-            .then(() => {
-                this._hooks.trigger("send:after",  url);
-            })
-            .catch((err) => {
-                this._hooks.trigger("send:error", url, err);
-            })
+        const url = `${this.getConfiguration('scheme')}://${this.getConfiguration('domain')}${this.getConfiguration('pixel')}?s=${this._site}`;
+        const data = JSON.stringify(event);
+        this._hooks.trigger("send:before", url);
+        http.post(url, data, (_url, data, res) => {
+            this._hooks.trigger("send:after", _url, data);
+        })
+
     }
 
     public Hooks() {
@@ -93,7 +122,7 @@ type Arrayable<T> = T | Array<T>;
 
 type HooksList = {
     "send:before":  Array<(url: string) => void>,
-    "send:after":   Array<(url: string) => void>,
+    "send:after":   Array<(url: string, data: string) => void>,
     "send:error":   Array<(url: string, err: any) => void>,
     "build:before": Array<(properties: {[k: string]: number | string | boolean | Date }) => void>,
     "build:after":  Array<(properties: {[k: string]: number | string | boolean }) => void>,

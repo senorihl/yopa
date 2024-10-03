@@ -30,9 +30,12 @@ services:
       target: builder
       args:
         ENTRY_DIRECTORY: services/pixel
+    environment:
+      NODE_ENV: 'production'
     volumes:
       - .:/app:rw
-    command: [ "yarn", "watch" ]
+    command: [ "sh", "-c", "yarn dev --no-watch.clearScreen" ]
+    tty: true
 
   pixel:
     image: senorihl/yopa-pixel_test

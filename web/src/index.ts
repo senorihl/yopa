@@ -1,20 +1,17 @@
-import {Yopa, type ConfigurationInput} from "./Yopa";
-
-type GlobalConfiguration = Partial<{
-    [Property in keyof ConfigurationInput as Uppercase<`_YOPA_${Property}`>]: ConfigurationInput[Property];
-}>
+import {Yopa} from "./Yopa";
 
 declare global {
-    interface Window extends GlobalConfiguration { Yopa: Yopa; }
+    const BUILD_BROWSER: boolean;
 }
 
-const config: Partial<ConfigurationInput> = {
-    debug: window._YOPA_DEBUG,
-    pixel: window._YOPA_PIXEL,
-    scheme: window._YOPA_SCHEME,
-    domain: window._YOPA_DOMAIN,
-    site: window._YOPA_SITE,
-};
-
-window.Yopa = new Yopa(config);
-Object.freeze(window.Yopa);
+export const yopa = (() => {
+    const _instance  = new Yopa();
+    if (BUILD_BROWSER) {
+        // @ts-ignore
+        if (window && !window[_instance.getConfiguration('global_var_name')]) {
+            // @ts-ignore
+            window[_instance.getConfiguration('global_var_name')] = _instance;
+        }
+    }
+    return _instance;
+})();

@@ -1,1 +1,1 @@
-window['Yopa'].sendEvent('page')
+window['_yopa'].sendEvent('page')
