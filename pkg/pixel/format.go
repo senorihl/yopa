@@ -88,8 +88,6 @@ func (event *Event) UnmarshalJSON(data []byte) error {
 		return errors.New("Missing required field `event_name`")
 	}
 
-	fmt.Println(receiver)
-
 	if visitor, ok := receiver["visitor"].(string); ok {
 		event.Visitor = visitor
 	} else {
@@ -112,7 +110,6 @@ func (event *Event) UnmarshalJSON(data []byte) error {
 	event.Timestamp = time.Now().UTC()
 
 	if ts, ok := receiver["ts"].(string); ok {
-		fmt.Println("ts", ts)
 		if tsF, tsErr := strconv.ParseInt(ts, 10, 64); nil == tsErr {
 			event.Timestamp = time.Unix(tsF, 0).UTC()
 		}

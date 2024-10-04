@@ -1,8 +1,10 @@
 package nats
 
 import (
+	"context"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go/jetstream"
 	"time"
 )
 
@@ -14,14 +16,36 @@ type Config struct {
 	}
 }
 
-func Setup(conf Config) (*nats.Conn, error) {
+func Setup(conf Config) (*nats.Conn, jetstream.JetStream, jetstream.Stream, error) {
 
 	opts := []nats.Option{nats.Name(conf.Name)}
 	opts = setupConnOptions(opts)
 
 	nc, err := nats.Connect(conf.Url, opts...)
 
-	return nc, err
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	js, jsError := jetstream.New(nc)
+
+	if jsError != nil {
+		return nc, js, nil, jsError
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+
+	stream, streamErr := js.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
+		Name:     conf.Pixel.Channel,
+		Subjects: []string{conf.Pixel.Channel + ".*"},
+	})
+
+	if streamErr != nil {
+		log.Warn("Cannot get/create Stream in JetStream", streamErr)
+	}
+
+	return nc, js, stream, err
 }
 
 func setupConnOptions(opts []nats.Option) []nats.Option {
@@ -39,5 +63,6 @@ func setupConnOptions(opts []nats.Option) []nats.Option {
 	opts = append(opts, nats.ClosedHandler(func(nc *nats.Conn) {
 		log.Fatalf("Exiting: %v", nc.LastError())
 	}))
+
 	return opts
 }

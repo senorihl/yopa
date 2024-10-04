@@ -102,7 +102,7 @@ export class Yopa {
 
     public sendEvent(name: string) {
         this._hooks.trigger("build:before", { event_name: name });
-        const event = { visitor: this._visitor, event_name: name, ts: Date.now() };
+        const event = { visitor: this._visitor, event_name: name, ts: `${Math.floor(Date.now()/1000)}` };
         this._hooks.trigger("build:after",  event);
         const url = `${this.getConfiguration('scheme')}://${this.getConfiguration('domain')}${this.getConfiguration('pixel')}?s=${this._site}`;
         const data = JSON.stringify(event);

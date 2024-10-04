@@ -24,7 +24,14 @@ COPY --from=core /app /app
 
 WORKDIR /app/web
 
-RUN --mount=type=cache,target=/root/.yarn YARN_CACHE_FOLDER=/root/.yarn yarn install --frozen-lockfile && yarn build
+ENV YARN_CACHE_FOLDER=/root/.yarn \
+    PATH="$PATH:/app/web/node_modules/.bin"
+
+VOLUME /root/.yarn
+
+RUN --mount=type=cache,target=/root/.yarn yarn install --frozen-lockfile
+
+ENTRYPOINT ["/app/web/entrypoint.sh"]
 
 CMD [ "yarn", "build" ]
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -8,6 +9,7 @@ import (
 	"github.com/senorihl/yopa/pkg/nats"
 	"github.com/senorihl/yopa/services/pixel/server"
 	"os"
+	"time"
 )
 
 func main() {
@@ -20,24 +22,25 @@ func main() {
 		Pixel: struct{ Channel string }{Channel: os.Getenv("NATS_PIXEL_TOPIC")},
 	}
 
-	nc, natsError := nats.Setup(conf)
+	_, js, _, err := nats.Setup(conf)
 
-	if natsError != nil {
-		log.Warn("Cannot connect to NATS", natsError)
+	if err != nil {
+		log.Warn("Cannot setup NATS with Jetstream: ", err)
 	}
 
 	fiberApp := server.Setup(func(query string, remoteAddr string) {
-		if natsError == nil {
+		if js != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+
 			payload := []byte(fmt.Sprintf("%s///?%s", remoteAddr, query))
-			err := nc.Publish(conf.Pixel.Channel, payload)
+			_, err := js.Publish(ctx, conf.Pixel.Channel+".new", payload)
 
 			if err == nil {
-				log.Debug("Sent to NATS: ", string(payload))
+				log.Debug("Sent to JetStream: ", string(payload))
 			} else {
-				log.Debug("Failed sending to NATS: ", string(payload), err)
+				log.Debug("Failed sending to JetStream: ", string(payload), err)
 			}
-		} else {
-			log.Warn("Didn't sent to NATS: ", natsError)
 		}
 	})
 

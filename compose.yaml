@@ -1,7 +1,6 @@
 services:
   traefik:
     image: "traefik:v3.1"
-    container_name: "traefik"
     command:
       - "--log.level=INFO"
       - "--api.insecure=true"
@@ -31,10 +30,10 @@ services:
       args:
         ENTRY_DIRECTORY: services/pixel
     environment:
-      NODE_ENV: 'production'
+      NODE_ENV: 'development'
     volumes:
       - .:/app:rw
-    command: [ "sh", "-c", "yarn dev --no-watch.clearScreen" ]
+    command: [ "yarn", "dev", "--no-watch.clearScreen" ]
     tty: true
 
   pixel:
@@ -72,3 +71,9 @@ services:
 
   nats:
     image: nats:2.10.21
+    command: ["-n", "yopa", "-js", "-sd", "/data/jetstream"]
+    volumes:
+      - jetstream-data:/data/jetstream
+
+volumes:
+  jetstream-data:
