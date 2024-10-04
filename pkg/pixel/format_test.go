@@ -3,6 +3,7 @@ package pixel
 import (
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestUnparseQuery(t *testing.T) {
@@ -28,18 +29,22 @@ func TestUnparseQuery(t *testing.T) {
 		{"Should throw err if missing `p.event_name`",
 			[]byte("?s=1337&p={\"test\":\"test\"}"),
 			Pixel{},
-			"Missing required event field `event_name`"},
-		{"Should throw err if empty `p.event_name`",
-			[]byte("?s=1337&p={\"test\":\"\"}"),
-			Pixel{},
-			"Missing required event field `event_name`"},
-		{"Should handle custom event as map",
+			"Missing required field `event_name`"},
+		{"Should throw err if missing `p.visitor`",
 			[]byte("?s=1337&p={\"event_name\":\"test\"}"),
-			Pixel{Site: 1337, Event: Event{Name: "test", Page: PageEvent{}, More: make(map[string]interface{})}},
+			Pixel{},
+			"Missing required field `visitor`"},
+		{"Should throw err if empty `p.event_name`",
+			[]byte("?s=1337&p={\"test\":\"\",\"visitor\":\"visitor\"}"),
+			Pixel{},
+			"Missing required field `event_name`"},
+		{"Should handle custom event as map",
+			[]byte("?s=1337&p={\"event_name\":\"test\",\"visitor\":\"visitor\",\"ts\":\"1727740800\"}"),
+			Pixel{Site: 1337, Event: Event{Name: "test", Globals: Globals{Timestamp: time.Date(2024, 10, 1, 0, 0, 0, 0, time.UTC).UTC(), Visitor: "visitor"}, Page: PageEvent{}, More: make(map[string]interface{})}},
 			""},
 		{"Should handle page event correctly",
-			[]byte("?s=1337&p={\"event_name\":\"page\",\"page\":\"page\"}"),
-			Pixel{Site: 1337, Event: Event{Name: "page", Page: PageEvent{Name: "page"}, More: make(map[string]interface{})}},
+			[]byte("?s=1337&p={\"event_name\":\"page\",\"page\":\"page\",\"visitor\":\"visitor\",\"ts\":\"1727740800\"}"),
+			Pixel{Site: 1337, Event: Event{Name: "page", Globals: Globals{Timestamp: time.Date(2024, 10, 1, 0, 0, 0, 0, time.UTC).UTC(), Visitor: "visitor"}, Page: PageEvent{Name: "page"}, More: make(map[string]interface{})}},
 			""},
 	}
 

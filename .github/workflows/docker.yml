@@ -2,6 +2,8 @@ name: Docker build & push images
 
 on:
   push:
+    tags:
+      - 'v*.*.*'
   workflow_dispatch:
 
 
@@ -53,11 +55,15 @@ jobs:
           docker compose -f .github/compose.yaml up -d
           .github/scripts/wait_for_curl.sh http://127.0.0.1/status || { docker compose -f .github/compose.yaml logs ; exit 1; }
 
+      - name: Get tag version
+        run: |-
+          echo "DOCKER_TAG=${{ startsWith(github.ref, 'refs/tags/v') && github.ref_name || 'latest' }}" | tee -a ${GITHUB_ENV}
+
       - name: Push Pixel image
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: senorihl/yopa-pixel
+          tags: senorihl/yopa-pixel:${{ env.DOCKER_TAG }}
           target: runnable
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -69,7 +75,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: senorihl/yopa-worker
+          tags: senorihl/yopa-worker:${{ env.DOCKER_TAG }}
           target: runnable
           cache-from: type=gha
           cache-to: type=gha,mode=max

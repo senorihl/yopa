@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 
 ARG GO_VERSION=1.23.1
+ARG NODE_VERSION=20.17.0
 
 FROM golang:${GO_VERSION} AS core
 
@@ -17,7 +18,7 @@ WORKDIR /app/${ENTRY_DIRECTORY}
 RUN --mount=type=cache,target=/go/pkg/mod  \
     CGO_ENABLED=0 GOOS=linux go build -o /entry
 
-FROM node:alpine AS builder
+FROM node:${NODE_VERSION}-alpine AS builder
 
 COPY --from=core /app /app
 

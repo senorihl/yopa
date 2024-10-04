@@ -24,6 +24,7 @@ func TestStatus(t *testing.T) {
 func TestPixel(t *testing.T) {
 	tests := []struct {
 		description string
+		method      string
 
 		// Test input
 		route string
@@ -34,7 +35,16 @@ func TestPixel(t *testing.T) {
 		expectedBody  string
 	}{
 		{
-			description:   "pixel route",
+			description:   "GET pixel route",
+			method:        "GET",
+			route:         "/pixel.gif",
+			expectedError: false,
+			expectedCode:  200,
+			expectedBody:  transPixel,
+		},
+		{
+			description:   "POST pixel route",
+			method:        "POST",
 			route:         "/pixel.gif",
 			expectedError: false,
 			expectedCode:  200,
@@ -51,7 +61,7 @@ func TestPixel(t *testing.T) {
 		// Create a new http request with the route
 		// from the test case
 		req, _ := http.NewRequest(
-			"GET",
+			test.method,
 			test.route,
 			nil,
 		)

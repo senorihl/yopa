@@ -16,16 +16,15 @@ type Pixel struct {
 
 type Event struct {
 	Globals
-	Name    string                 `json:"-"`
-	Visitor string                 `json:"-"`
-	Page    PageEvent              `json:"-"`
-	Action  ActionEvent            `json:"-"`
-	More    map[string]interface{} `json:"-"`
+	Name   string                 `json:"-"`
+	Page   PageEvent              `json:"-"`
+	Action ActionEvent            `json:"-"`
+	More   map[string]interface{} `json:"-"`
 }
 
 type Globals struct {
 	Timestamp time.Time `json:"-"`
-	Visitor   string    `json:"visitor"`
+	Visitor   string    `json:"-"`
 }
 
 type PageEvent struct {
@@ -83,11 +82,23 @@ func (event *Event) UnmarshalJSON(data []byte) error {
 		return errors.New("Invalid `p` format")
 	}
 
-	switch receiver["event_name"] {
-	case nil:
-		return errors.New("Missing required event field `event_name`")
+	if name, ok := receiver["event_name"].(string); ok {
+		event.Name = name
+	} else {
+		return errors.New("Missing required field `event_name`")
+	}
+
+	fmt.Println(receiver)
+
+	if visitor, ok := receiver["visitor"].(string); ok {
+		event.Visitor = visitor
+	} else {
+		return errors.New("Missing required field `visitor`")
+	}
+
+	switch event.Name {
 	case "":
-		return errors.New("Missing required event field `event_name`")
+		return errors.New("Invalid value for field `event_name`")
 	case "page":
 		if err := json.Unmarshal(data, &event.Page); err != nil {
 			return errors.Join(errors.New("Invalid page event"), err)
@@ -97,18 +108,20 @@ func (event *Event) UnmarshalJSON(data []byte) error {
 			return errors.Join(errors.New("Invalid action event"), err)
 		}
 	}
-	event.Name = receiver["event_name"].(string)
-	event.Visitor = receiver["visitor"].(string)
-	ts, tsErr := strconv.ParseInt(fmt.Sprint(receiver["ts"].(float64)), 10, 64)
-	if nil != tsErr {
-		event.Timestamp = time.Now()
-	} else {
-		event.Timestamp = time.Unix(ts, 0)
+
+	event.Timestamp = time.Now().UTC()
+
+	if ts, ok := receiver["ts"].(string); ok {
+		fmt.Println("ts", ts)
+		if tsF, tsErr := strconv.ParseInt(ts, 10, 64); nil == tsErr {
+			event.Timestamp = time.Unix(tsF, 0).UTC()
+		}
 	}
+
 	event.More = make(map[string]interface{})
 
 	var reservedKeys []string
-	reservedKeys = append(reservedKeys, "event_name")
+	reservedKeys = append(reservedKeys, "event_name", "visitor", "ts")
 	reservedEvents := make([]interface{}, 0)
 	reservedEvents = append(reservedEvents, PageEvent{})
 	reservedEvents = append(reservedEvents, ActionEvent{})
