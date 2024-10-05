@@ -24,8 +24,5 @@
     "serve": "webpack serve"
   },
   "description": "My webpack project",
-  "name": "my-webpack-project",
-  "dependencies": {
-    "@senorihl/yopa": "link:/app/web"
-  }
+  "name": "my-webpack-project"
 }

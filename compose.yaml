@@ -14,6 +14,7 @@ services:
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   demo:
     build:
       context: .
@@ -27,6 +28,7 @@ services:
       - "traefik.http.services.demo.loadbalancer.server.port=80"
     volumes:
       - .:/app:rw
+      - ./demo/entrypoint.sh:/usr/local/bin/docker-entrypoint.sh:rw
 
   script:
     image: senorihl/yopa-builder_test
@@ -39,6 +41,7 @@ services:
       NODE_ENV: 'development'
     volumes:
       - .:/app:rw
+      - ./demo/entrypoint.sh:/usr/local/bin/docker-entrypoint.sh:rw
     command: [ "yarn", "dev", "--no-watch.clearScreen" ]
     tty: true
 

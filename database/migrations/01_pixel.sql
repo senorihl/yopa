@@ -17,12 +17,14 @@ CREATE TABLE IF NOT EXISTS pixel
     page_chapter1     VARCHAR,
     page_chapter2     VARCHAR,
     page_chapter3     VARCHAR,
+    page_full         VARCHAR GENERATED ALWAYS AS (page_chapter1 || '::' || page_chapter2 || '::' || page_chapter3 || '::'|| page) STORED,
 
     action            VARCHAR,
     action_type       VARCHAR,
     action_chapter1   VARCHAR,
     action_chapter2   VARCHAR,
     action_chapter3   VARCHAR,
+    action_full       VARCHAR GENERATED ALWAYS AS (action_chapter1 || '::' || action_chapter2 || '::' || action_chapter3 || '::' || action || '@' || action_type) STORED,
 
     custom_properties JSON,
     PRIMARY KEY (id, ts)

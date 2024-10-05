@@ -21,6 +21,7 @@ RUN --mount=type=cache,target=/go/pkg/mod  \
 FROM node:${NODE_VERSION}-alpine AS builder
 
 COPY --from=core /app /app
+COPY ./web/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR /app/web
 
@@ -30,8 +31,6 @@ ENV YARN_CACHE_FOLDER=/root/.yarn \
 VOLUME /root/.yarn
 
 RUN --mount=type=cache,target=/root/.yarn yarn install --frozen-lockfile && yarn build
-
-ENTRYPOINT ["/app/web/entrypoint.sh"]
 
 CMD [ "yarn", "build" ]
 
@@ -59,11 +58,10 @@ CMD gow -v run "./${ENTRY_DIRECTORY}"
 FROM node:${NODE_VERSION}-alpine as demo
 
 COPY --from=builder /app /app
+COPY ./demo/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR /app/demo
 
 EXPOSE 80
-
-ENTRYPOINT ["/app/demo/entrypoint.sh"]
 
 CMD [ "yarn", "serve" ]

@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 set -e
 
 already_runned=$(psql -qtAX --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" -c "SELECT run_at FROM migrations WHERE name = '01_pixel' LIMIT 1;")
