@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "./dist/browser/typings",
+    "emitDeclarationOnly": true,
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": true,
     "module": "esnext",

@@ -3,6 +3,7 @@
   "description": "The JavaScript SDK for Yopa",
   "name": "yopa",
   "license": "UNLICENSED",
+  "typings": "./dist/browserless/typings/index.d.ts",
   "main": "./dist/browserless/yopa.cjs.js",
   "module": "./dist/browserless/yopa.esm.js",
   "browser": "./dist/browser/yopa.umd.js",
@@ -12,6 +13,10 @@
     "test": "jest",
     "pretest": "npm run build"
   },
+  "repository": "https://github.com/senorihl/yopa.git",
+  "files": [
+    "dist"
+  ],
   "devDependencies": {
     "@rollup/plugin-replace": "^6.0.1",
     "@rollup/plugin-typescript": "^12.1.0",

@@ -15,7 +15,6 @@ module.exports = [
                 format: 'cjs',
                 exports: 'auto',
                 inlineDynamicImports: true,
-                name: 'yopa'
             },
             {
                 file: 'dist/browserless/yopa.esm.js',

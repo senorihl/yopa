@@ -2,9 +2,12 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": false,
-    "module": "es6",
+    "module": "CommonJS",
     "target": "es5",
-    "allowJs": true
+    "allowJs": true,
+    "paths": {
+      "yopa/*": ["./node_modules/yopa"]
+    }
   },
   "files": ["src/index.ts"]
 }

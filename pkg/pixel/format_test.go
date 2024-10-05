@@ -7,6 +7,7 @@ import (
 )
 
 func TestUnparseQuery(t *testing.T) {
+	var page = "page"
 	var tests = []struct {
 		name  string
 		input []byte
@@ -44,7 +45,7 @@ func TestUnparseQuery(t *testing.T) {
 			""},
 		{"Should handle page event correctly",
 			[]byte("?s=1337&p={\"event_name\":\"page\",\"page\":\"page\",\"visitor\":\"visitor\",\"ts\":\"1727740800\"}"),
-			Pixel{Site: 1337, Event: Event{Name: "page", Globals: Globals{Timestamp: time.Date(2024, 10, 1, 0, 0, 0, 0, time.UTC).UTC(), Visitor: "visitor"}, Page: PageEvent{Name: "page"}, More: make(map[string]interface{})}},
+			Pixel{Site: 1337, Event: Event{Name: "page", Globals: Globals{Timestamp: time.Date(2024, 10, 1, 0, 0, 0, 0, time.UTC).UTC(), Visitor: "visitor"}, Page: PageEvent{Name: &page}, More: make(map[string]interface{})}},
 			""},
 	}
 

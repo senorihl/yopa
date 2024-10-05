@@ -29,13 +29,16 @@ ENV YARN_CACHE_FOLDER=/root/.yarn \
 
 VOLUME /root/.yarn
 
-RUN --mount=type=cache,target=/root/.yarn yarn install --frozen-lockfile
+RUN --mount=type=cache,target=/root/.yarn yarn install --frozen-lockfile && yarn build
 
 ENTRYPOINT ["/app/web/entrypoint.sh"]
 
 CMD [ "yarn", "build" ]
 
 FROM scratch AS runnable
+
+LABEL org.opencontainers.image.source=https://github.com/senorihl/yopa
+LABEL org.opencontainers.image.licenses=UNLICENSED
 
 COPY --from=core /entry /entry
 COPY --from=builder /app/web/dist /app/web/dist
@@ -52,3 +55,15 @@ RUN --mount=type=cache,target=/go/pkg/mod  \
     go install github.com/mitranim/gow@latest
 
 CMD gow -v run "./${ENTRY_DIRECTORY}"
+
+FROM node:${NODE_VERSION}-alpine as demo
+
+COPY --from=builder /app /app
+
+WORKDIR /app/demo
+
+EXPOSE 80
+
+ENTRYPOINT ["/app/demo/entrypoint.sh"]
+
+CMD [ "yarn", "serve" ]

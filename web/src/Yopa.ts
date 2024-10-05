@@ -100,9 +100,15 @@ export class Yopa {
         return undefined;
     }
 
-    public sendEvent(name: string) {
-        this._hooks.trigger("build:before", { event_name: name });
-        const event = { visitor: this._visitor, event_name: name, ts: `${Math.floor(Date.now()/1000)}` };
+    public sendEvent(name: 'page', props?: Partial<{ page: string, page_chapter1: string, page_chapter2: string, page_chapter3: string, [rest: string]: Arrayable<string | number | boolean> }>): void;
+    public sendEvent(name: string, props?: Partial<{ [rest: string]: Arrayable<string | number | boolean> }>) {
+        this._hooks.trigger("build:before", { ...props, event_name: name });
+        const event = {
+            ...props,
+            visitor: this._visitor,
+            event_name: name,
+            ts: `${Math.floor(Date.now()/1000)}`
+        };
         this._hooks.trigger("build:after",  event);
         const url = `${this.getConfiguration('scheme')}://${this.getConfiguration('domain')}${this.getConfiguration('pixel')}?s=${this._site}`;
         const data = JSON.stringify(event);

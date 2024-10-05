@@ -24,6 +24,13 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_TOKEN }}
+
       - name: Build Pixel image
         uses: docker/build-push-action@v6
         with:
@@ -63,7 +70,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: senorihl/yopa-pixel:${{ env.DOCKER_TAG }}
+          tags: |
+            senorihl/yopa-pixel:${{ env.DOCKER_TAG }}
+            ghcr.io/${{ github.repository }}-pixel:${{ env.DOCKER_TAG }}
           target: runnable
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -75,7 +84,9 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: senorihl/yopa-worker:${{ env.DOCKER_TAG }}
+          tags: |
+            senorihl/yopa-worker:${{ env.DOCKER_TAG }}
+            ghcr.io/${{ github.repository }}-worker:${{ env.DOCKER_TAG }}
           target: runnable
           cache-from: type=gha
           cache-to: type=gha,mode=max

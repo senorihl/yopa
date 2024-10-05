@@ -28,18 +28,18 @@ type Globals struct {
 }
 
 type PageEvent struct {
-	Name     string `json:"page"`
-	Chapter1 string `json:"page_chapter1"`
-	Chapter2 string `json:"page_chapter2"`
-	Chapter3 string `json:"page_chapter3"`
+	Name     *string `json:"page"`
+	Chapter1 *string `json:"page_chapter1"`
+	Chapter2 *string `json:"page_chapter2"`
+	Chapter3 *string `json:"page_chapter3"`
 }
 
 type ActionEvent struct {
-	Name     string `json:"action"`
-	Type     string `json:"action_type"`
-	Chapter1 string `json:"action_chapter1"`
-	Chapter2 string `json:"action_chapter2"`
-	Chapter3 string `json:"action_chapter3"`
+	Name     *string `json:"action"`
+	Type     *string `json:"action_type"`
+	Chapter1 *string `json:"action_chapter1"`
+	Chapter2 *string `json:"action_chapter2"`
+	Chapter3 *string `json:"action_chapter3"`
 }
 
 func UnparseQuery(query []byte) (Pixel, error) {

@@ -7,6 +7,7 @@
 *.out
 go.work
 .idea
+!database/migrations/*.sql
 cmake-build-*/
 *.iws
 out/
