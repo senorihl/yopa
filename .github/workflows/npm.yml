@@ -31,9 +31,10 @@ jobs:
       working-directory: ./web
       run: yarn
     - name: Publish
-      working-directory: ./web
-      run: |
-        yarn build
-        npm publish --provenance --access public --tag development
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      uses: JS-DevTools/npm-publish@v3
+      with:
+        package: ./web
+        token: ${{ secrets.NPM_TOKEN }}
+        tag: development
+        provenance: true
+        access: public
